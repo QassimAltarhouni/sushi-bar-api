@@ -1,0 +1,724 @@
+openapi: 3.0.3
+info:
+  title: Sushi-Bar Web Application API
+  description: REST API for managing a Sushi-Bar system.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+tags:
+  - name: menu
+    description: Operations related to the menu
+  - name: orders
+    description: Handling customer orders
+  - name: reservations
+    description: Table reservations for customers
+  - name: users
+    description: User account management
+paths:
+  /menu:
+    get:
+      tags:
+        - menu
+      summary: Get all menu items
+      operationId: getAllMenuItems
+      description: Retrieve a list of all available sushi items.
+      responses:
+        '200':
+          description: A list of menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItem'
+              examples:
+                example1:
+                  value: 
+                    - id: 1
+                      name: "California Roll"
+                      price: 8.99
+                      description: "A sushi roll with crab, avocado, and cucumber."
+                    - id: 2
+                      name: "Spicy Tuna Roll"
+                      price: 9.99
+                      description: "A sushi roll with spicy tuna and cucumber."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+    post:
+      tags:
+        - menu
+      summary: Add a new menu item
+      operationId: addMenuItem
+      description: Admin can add a new sushi item to the menu.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuItem'
+      responses:
+        '201':
+          description: Menu item added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+              examples:
+                example1:
+                  value: 
+                    id: 3
+                    name: "Salmon Nigiri"
+                    price: 10.99
+                    description: "Fresh salmon on top of sushi rice."
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input data"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+    delete:
+      tags:
+        - menu
+      summary: Delete all menu items
+      operationId: deleteAllMenuItems
+      description: Remove all sushi items from the menu (Admin only).
+      responses:
+        '204':
+          description: All menu items deleted successfully
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+
+          
+          
+          
+  /menu/{id}:
+    get:
+      tags:
+        - menu
+      summary: Get a specific menu item
+      operationId: getMenuItemById
+      description: Retrieve details of a specific sushi item by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the menu item to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the menu item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+              examples:
+                example1:
+                  value: 
+                    id: 1
+                    name: "California Roll"
+                    price: 8.99
+                    description: "A sushi roll with crab, avocado, and cucumber."
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Menu item not found"
+    put:
+      tags:
+        - menu
+      summary: Update a menu item
+      operationId: updateMenuItem
+      description: Modify an existing sushi item (Admin only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the menu item to update.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuItem'
+      responses:
+        '200':
+          description: Menu item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+              examples:
+                example1:
+                  value: 
+                    id: 1
+                    name: "California Roll"
+                    price: 8.99
+                    description: "A sushi roll with crab, avocado, and cucumber."
+        '400':
+          description: Invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid data provided"
+        '404':
+          description: Menu item not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Menu item not found"
+    delete:
+      tags:
+        - menu
+      summary: Delete a menu item
+      operationId: deleteMenuItem
+      description: Remove a sushi item from the menu (Admin only).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the menu item to delete.
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Menu item deleted successfully
+        '404':
+          description: Menu item not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Menu item not found"
+  /reservations:
+    post:
+      tags:
+        - reservations
+      summary: Create a new reservation
+      operationId: createReservation
+      description: Customers can reserve a table at the sushi bar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '201':
+          description: Reservation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+              examples:
+                example1:
+                  value:
+                    reservationId: 1
+                    status: "Confirmed"
+                    date: "2023-10-01T19:00:00Z"
+        '400':
+          description: Invalid reservation data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid reservation data"
+    get:
+      tags:
+        - reservations
+      summary: Get all reservations
+      operationId: getAllReservations
+      description: Retrieve a list of all reservations (Admin only).
+      responses:
+        '200':
+          description: A list of reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReservationResponse'
+    delete:
+      summary: Delete all reservations
+      operationId: deleteAllReservations
+      tags:
+        - reservations
+      responses:
+        '204':
+          description: All reservations deleted
+        '500':
+          description: Server error
+
+
+
+  /reservations/{reservationId}:
+    get:
+      tags:
+        - reservations
+      summary: Get reservation details
+      operationId: getReservationById
+      description: Retrieve details of a specific reservation.
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          description: The ID of the reservation to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the reservation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+              examples:
+                example1:
+                  value:
+                    reservationId: 1
+                    customerNumber: "Mohammed Qassim"
+                    status: "Confirmed"
+                    date: "2023-10-01T19:00:00Z"
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Reservation not found"
+    delete:
+      tags:
+        - reservations
+      summary: Cancel a reservation
+      operationId: cancelReservation
+      description: Allows a customer to cancel an existing reservation.
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          description: The ID of the reservation to cancel.
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Reservation successfully canceled
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Reservation not found"
+  /users:
+    get:
+      tags:
+        - users
+      summary: Get all users
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                example1:
+                  value:
+                    - id: 1
+                      username: "MohammedQassim"
+                      email: "MohammedQassim@gmail.com"
+                      role: "admin"
+                    - id: 2
+                      username: "Qassimdoe"
+                      email: "Qassimdoe@example.com"
+                      role: "customer"
+    post:
+      tags:
+        - users
+      summary: Create a new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                example1:
+                  value:
+                    id: 3
+                    username: "newuser"
+                    email: "newuser@example.com"
+                    role: "customer"
+        '400':
+          description: Invalid user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid user data"
+
+          
+          
+          
+    delete:
+      tags:
+        - users
+      summary: Delete all users
+      operationId: deleteAllUsers
+      responses:
+        '204':
+          description: All users deleted successfully
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+  /users/{userId}:
+    put:
+      tags:
+        - users
+      summary: Update user info
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to update.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                example1:
+                  value:
+                    id: 1
+                    username: "MohammedQassim"
+                    email: "MohammedQassim@gmail.com"
+                    role: "admin"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+  /orders:
+    get:
+      tags:
+        - orders
+      summary: Get all orders
+      operationId: getAllOrders
+      responses:
+        '200':
+          description: List of all orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+              examples:
+                example1:
+                  value:
+                    - orderId: 1
+                      customerNumber: "Mohammed Qassim"
+                      status: "Completed"
+                      items:
+                        - id: 1
+                          name: "California Roll"
+                          price: 8.99
+                    - orderId: 2
+                      customerNumber: "Qassim Doe"
+                      status: "Pending"
+                      items:
+                        - id: 2
+                          name: "Spicy Tuna Roll"
+                          price: 9.99
+    post:
+      tags:
+        - orders
+      summary: Place a new order
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+              examples:
+                example1:
+                  value:
+                    orderId: 3
+                    customerNumber: "Alice Smith"
+                    status: "Pending"
+                    items:
+                      - id: 1
+                        name: "California Roll"
+                        price: 8.99
+        '400':
+          description: Invalid order data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid order data"
+
+  /orders/{orderId}:
+    get:
+      tags:
+        - orders
+      summary: Get order by ID
+      operationId: getOrderById
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: The ID of the order to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+              examples:
+                example1:
+                  value:
+                    orderId: 1
+                    customerNumber: "Mohammed Qassim"
+                    status: "Completed"
+                    items:
+                      - id: 1
+                        name: "California Roll"
+                        price: 8.99
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Order not found"
+    delete:
+      tags:
+        - orders
+      summary: Cancel an order
+      operationId: deleteOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: The ID of the order to cancel.
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Order canceled successfully
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Order not found"
+
+components:
+  schemas:
+    MenuItem:
+      type: object
+      required:
+        - name
+        - price
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: Name of the sushi item
+        price:
+          type: number
+          format: float
+          description: Price of the item
+        description:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+          description: URL of the menu item image
+    ReservationRequest:
+      type: object
+      required:
+        - custumerNumber 
+        - date
+        - tableNumber
+      properties:
+        customerNumber:
+          type: string
+        date:
+          type: string
+          format: date-time
+        tableNumber:
+          type: integer
+    ReservationResponse:
+      type: object
+      properties:
+        reservationId:
+          type: integer
+        status:
+          type: string
+        date:
+          type: string
+          format: date-time
+    User:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+    OrderRequest:
+      type: object
+      required:
+        - items
+        - customerNumber
+      properties:
+        customerNumber:
+          type: string
+        items:
+          type: array
+          items:
+            type: integer
+            description: Menu item IDs
+        notes:
+          type: string
+    OrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: integer
+        customerNumber:
+          type: string
+        status:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'

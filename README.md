@@ -1,0 +1,2 @@
+# sushi-bar-api
+ This project is a full-featured RESTful API for managing a Sushi Bar system, built using Spring Boot and designed via an OpenAPI-first approach. The system supports:  Menu Management (admin)  Order Placement & Tracking  Table Reservations  User Management (admin & public operations like registration)  Well-organized endpoints using tags: admin, users, orders, menu, reservations, and public.  Generated using OpenAPI Generator and structured with a modular Spring Boot architecture (api and services modules).
