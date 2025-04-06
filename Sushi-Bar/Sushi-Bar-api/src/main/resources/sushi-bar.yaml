@@ -674,6 +674,8 @@ components:
       properties:
         reservationId:
           type: integer
+        customerNumber:
+          type: string
         status:
           type: string
         date:
@@ -692,6 +694,8 @@ components:
         email:
           type: string
           format: email
+        phone:
+          type: string
         role:
           type: string
     OrderRequest:
@@ -714,6 +718,8 @@ components:
       properties:
         orderId:
           type: integer
+        phone:
+          type: string
         customerNumber:
           type: string
         status:

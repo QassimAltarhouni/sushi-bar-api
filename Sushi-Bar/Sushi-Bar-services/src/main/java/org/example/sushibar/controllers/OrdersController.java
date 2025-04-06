@@ -1,88 +1,68 @@
 package org.example.sushibar.controllers;
 
 import com.example.api.OrdersApi;
-import com.example.models.MenuItem;
 import com.example.models.OrderRequest;
 import com.example.models.OrderResponse;
+import org.example.sushibar.entities.MenuItemEntity;
+import org.example.sushibar.entities.OrderEntity;
+import org.example.sushibar.mappers.OrderMapper;
+import org.example.sushibar.repositories.MenuItemRepository;
+import org.example.sushibar.services.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.NativeWebRequest;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 public class OrdersController implements OrdersApi {
 
-    @Override
-    public Optional<NativeWebRequest> getRequest() {
-        return OrdersApi.super.getRequest();
+    private final OrderService orderService;
+    private final MenuItemRepository menuItemRepository;
+
+    @Autowired
+    public OrdersController(OrderService orderService, MenuItemRepository menuItemRepository) {
+        this.orderService = orderService;
+        this.menuItemRepository = menuItemRepository;
     }
 
     @Override
     public ResponseEntity<OrderResponse> createOrder(OrderRequest orderRequest) {
-        // Convert item IDs into MenuItem objects (mocked)
-        List<MenuItem> menuItems = new ArrayList<>();
-        for (Integer itemId : orderRequest.getItems()) {
-            MenuItem item = new MenuItem()
-                    .id(itemId)
-                    .name("Sushi #" + itemId)
-                    .description("Mock description for item " + itemId)
-                    .price(10.99F)
-                    .category("Default")
-                    .imageUrl(URI.create("https://example.com/image/" + itemId));
-            menuItems.add(item);
-        }
+        List<MenuItemEntity> items = menuItemRepository.findAllById(orderRequest.getItems()
+                .stream()
+                .map(Integer::longValue)
+                .collect(Collectors.toList()));
 
-        // Simulate order creation
-        OrderResponse order = new OrderResponse()
-                .orderId(1)
-                .customerNumber(orderRequest.getCustomerNumber())
-                .items(menuItems)
-                .status("confirmed");
+        OrderEntity order = new OrderEntity();
+        order.setCustomerNumber(orderRequest.getCustomerNumber());
+        order.setStatus("Pending");
+        order.setItems(items);
 
-        return ResponseEntity.status(201).body(order);
-    }
-
-    @Override
-    public ResponseEntity<Void> deleteOrder(Integer orderId) {
-        // Simulate deletion logic
-        return ResponseEntity.noContent().build();
+        OrderEntity saved = orderService.create(order);
+        return ResponseEntity.status(201).body(OrderMapper.toDto(saved));
     }
 
     @Override
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
-        // Simulate returning order list
-        List<OrderResponse> orders = new ArrayList<>();
-
-        orders.add(new OrderResponse()
-                .orderId(1)
-                .customerNumber("12345")
-                .status("shipped")
-                .items(new ArrayList<>()) // Empty list for simplicity
-        );
-
-        orders.add(new OrderResponse()
-                .orderId(2)
-                .customerNumber("67890")
-                .status("processing")
-                .items(new ArrayList<>())
-        );
-
+        List<OrderResponse> orders = orderService.getAll()
+                .stream()
+                .map(OrderMapper::toDto)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(orders);
     }
 
     @Override
     public ResponseEntity<OrderResponse> getOrderById(Integer orderId) {
-        // Simulate fetching order by ID
-        OrderResponse order = new OrderResponse()
-                .orderId(orderId)
-                .customerNumber("12345")
-                .status("delivered")
-                .items(new ArrayList<>()); // Empty list for now
+        Optional<OrderEntity> found = orderService.getById(orderId.longValue());
+        return found.map(order -> ResponseEntity.ok(OrderMapper.toDto(order)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-        return ResponseEntity.ok(order);
+    @Override
+    public ResponseEntity<Void> deleteOrder(Integer orderId) {
+        orderService.delete(orderId.longValue());
+        return ResponseEntity.noContent().build();
     }
 }

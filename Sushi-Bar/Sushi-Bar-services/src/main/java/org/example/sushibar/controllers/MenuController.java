@@ -2,59 +2,66 @@ package org.example.sushibar.controllers;
 
 import com.example.api.MenuApi;
 import com.example.models.MenuItem;
+import org.example.sushibar.entities.MenuItemEntity;
+import org.example.sushibar.mappers.MenuItemMapper;
+import org.example.sushibar.services.MenuService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 public class MenuController implements MenuApi {
 
-    private final List<MenuItem> menuItems = new ArrayList<>();
+    private final MenuService menuService;
+
+    @Autowired
+    public MenuController(MenuService menuService) {
+        this.menuService = menuService;
+    }
 
     @Override
     public ResponseEntity<MenuItem> addMenuItem(MenuItem menuItem) {
-        menuItem.setId(menuItems.size() + 1); // Simple mock ID
-        menuItems.add(menuItem);
-        return ResponseEntity.status(201).body(menuItem);
+        MenuItemEntity entity = MenuItemMapper.toEntity(menuItem);
+        MenuItemEntity saved = menuService.create(entity);
+        return ResponseEntity.status(201).body(MenuItemMapper.toDto(saved));
     }
 
     @Override
     public ResponseEntity<Void> deleteAllMenuItems() {
-        menuItems.clear();
+        menuService.getAll().forEach(item -> menuService.delete(item.getId()));
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<Void> deleteMenuItem(Integer id) {
-        menuItems.removeIf(item -> item.getId().equals(id));
+        menuService.delete(id.longValue());
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<List<MenuItem>> getAllMenuItems() {
-        return ResponseEntity.ok(menuItems);
+        List<MenuItem> items = menuService.getAll()
+                .stream()
+                .map(MenuItemMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(items);
     }
 
     @Override
     public ResponseEntity<MenuItem> getMenuItemById(Integer id) {
-        return menuItems.stream()
-                .filter(item -> item.getId().equals(id))
-                .findFirst()
-                .map(ResponseEntity::ok)
+        Optional<MenuItemEntity> found = menuService.getById(id.longValue());
+        return found.map(entity -> ResponseEntity.ok(MenuItemMapper.toDto(entity)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @Override
     public ResponseEntity<MenuItem> updateMenuItem(Integer id, MenuItem menuItem) {
-        for (int i = 0; i < menuItems.size(); i++) {
-            if (menuItems.get(i).getId().equals(id)) {
-                menuItem.setId(id);
-                menuItems.set(i, menuItem);
-                return ResponseEntity.ok(menuItem);
-            }
-        }
-        return ResponseEntity.notFound().build();
+        MenuItemEntity updatedEntity = MenuItemMapper.toEntity(menuItem);
+        MenuItemEntity result = menuService.update(id.longValue(), updatedEntity);
+        return ResponseEntity.ok(MenuItemMapper.toDto(result));
     }
 }
