@@ -1,6 +1,7 @@
 package org.example.sushibar.controllers;
 
 import com.example.api.MenuApi;
+import com.example.models.GetAllMenuItems200Response;
 import com.example.models.MenuItem;
 import org.example.sushibar.entities.MenuItemEntity;
 import org.example.sushibar.mappers.MenuItemMapper;
@@ -8,10 +9,8 @@ import org.example.sushibar.services.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @RestController
 public class MenuController implements MenuApi {
@@ -43,12 +42,24 @@ public class MenuController implements MenuApi {
     }
 
     @Override
-    public ResponseEntity<List<MenuItem>> getAllMenuItems() {
-        List<MenuItem> items = menuService.getAll()
-                .stream()
-                .map(MenuItemMapper::toDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(items);
+    public ResponseEntity<GetAllMenuItems200Response> getAllMenuItems(Integer page, Integer size) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        var pageResult = menuService.getAllPaged(pageable);
+
+        GetAllMenuItems200Response response = new GetAllMenuItems200Response();
+        response.setContent(
+                pageResult.getContent().stream()
+                        .map(MenuItemMapper::toDto)
+                        .toList()
+        );
+        response.setNumber(pageResult.getNumber());
+        response.setSize(pageResult.getSize());
+
+        response.setTotalElements((int) pageResult.getTotalElements());
+
+        response.setTotalPages(pageResult.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
 
     @Override

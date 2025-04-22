@@ -3,9 +3,10 @@ package org.example.sushibar.services;
 import org.example.sushibar.entities.MenuItemEntity;
 import org.example.sushibar.repositories.MenuItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+ import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -51,4 +52,10 @@ public class MenuServiceImpl implements MenuService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    @Override
+    public Page<MenuItemEntity> getAllPaged(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
 }

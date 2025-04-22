@@ -1,11 +1,14 @@
+
 package org.example.sushibar.services;
 
 import org.example.sushibar.entities.ReservationEntity;
 import org.example.sushibar.repositories.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -36,5 +39,24 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    @Override
+    public Page<ReservationEntity> getAllPaged(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
+    @Override
+    public ReservationEntity updateStatus(Long reservationId, String status) {
+        ReservationEntity reservation = getById(reservationId)
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+
+        try {
+            reservation.setStatus(ReservationEntity.ReservationStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status);
+        }
+
+        return repository.save(reservation);
     }
 }

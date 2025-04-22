@@ -1,16 +1,21 @@
+
 package org.example.sushibar.controllers;
 
 import com.example.api.ReservationsApi;
+import com.example.models.GetAllReservations200Response;
 import com.example.models.ReservationRequest;
 import com.example.models.ReservationResponse;
+import com.example.models.UpdateReservationStatusRequest;
 import org.example.sushibar.entities.ReservationEntity;
 import org.example.sushibar.mappers.ReservationMapper;
 import org.example.sushibar.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.example.sushibar.models.ErrorResponse;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,11 +49,22 @@ public class ReservationsController implements ReservationsApi {
     }
 
     @Override
-    public ResponseEntity<List<ReservationResponse>> getAllReservations() {
-        List<ReservationResponse> list = reservationService.getAll().stream()
-                .map(ReservationMapper::toDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(list);
+    public ResponseEntity<GetAllReservations200Response> getAllReservations(Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page, size);
+        var pageResult = reservationService.getAllPaged(pageable);
+
+        GetAllReservations200Response response = new GetAllReservations200Response();
+        response.setContent(
+                pageResult.getContent().stream()
+                        .map(ReservationMapper::toDto)
+                        .collect(Collectors.toList())
+        );
+        response.setNumber(pageResult.getNumber());
+        response.setSize(pageResult.getSize());
+        response.setTotalPages(pageResult.getTotalPages());
+        response.setTotalElements((int) pageResult.getTotalElements());
+
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -57,4 +73,39 @@ public class ReservationsController implements ReservationsApi {
         return found.map(r -> ResponseEntity.ok(ReservationMapper.toDto(r)))
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    private boolean isValidReservationTransition(ReservationEntity.ReservationStatus current, ReservationEntity.ReservationStatus next) {
+        return switch (current) {
+            case PENDING -> next == ReservationEntity.ReservationStatus.CONFIRMED || next == ReservationEntity.ReservationStatus.CANCELLED;
+            case CONFIRMED -> next == ReservationEntity.ReservationStatus.SEATED;
+            case SEATED -> next == ReservationEntity.ReservationStatus.COMPLETED;
+            case COMPLETED, CANCELLED -> false;
+        };
+    }
+
+
+
+    @Override
+    public ResponseEntity<ReservationResponse> updateReservationStatus(
+            Integer reservationId,
+            UpdateReservationStatusRequest updateRequest
+    ) {
+        ReservationEntity reservation = reservationService.getById(reservationId.longValue())
+                .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
+
+        var current = reservation.getStatus();
+        var next = ReservationEntity.ReservationStatus.valueOf(updateRequest.getStatus().toString().toUpperCase());
+
+        if (!isValidReservationTransition(current, next)) {
+            throw new IllegalArgumentException("Invalid status transition from " + current + " to " + next);
+        }
+
+        reservation.setStatus(next);
+        var updated = reservationService.create(reservation);
+        return ResponseEntity.ok(ReservationMapper.toDto(updated));
+    }
+
+
 }
+
+

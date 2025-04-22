@@ -12,8 +12,7 @@ public class OrderMapper {
         OrderResponse dto = new OrderResponse();
         dto.setOrderId(entity.getId().intValue());
         dto.setCustomerNumber(entity.getCustomerNumber());
-        dto.setStatus(entity.getStatus());
-
+        dto.setStatus(OrderResponse.StatusEnum.valueOf(entity.getStatus().name()));
         if (entity.getItems() != null) {
             dto.setItems(entity.getItems().stream()
                     .map(menuItem -> new com.example.models.MenuItem()

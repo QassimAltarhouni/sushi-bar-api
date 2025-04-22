@@ -13,7 +13,10 @@ public class ReservationEntity {
     private Long id;
 
     private String customerNumber;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status = ReservationStatus.PENDING;
+
     private LocalDateTime date;
     private Integer tableNumber;
 
@@ -24,12 +27,26 @@ public class ReservationEntity {
     public String getCustomerNumber() { return customerNumber; }
     public void setCustomerNumber(String customerNumber) { this.customerNumber = customerNumber; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public ReservationStatus getStatus() { return status; }
+    public void setStatus(ReservationStatus status) { this.status = status; }
 
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
 
     public Integer getTableNumber() { return tableNumber; }
     public void setTableNumber(Integer tableNumber) { this.tableNumber = tableNumber; }
+
+    // Enum definition
+    public enum ReservationStatus {
+        PENDING,
+        CONFIRMED,
+        SEATED,
+        COMPLETED,
+        CANCELLED
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
+
 }

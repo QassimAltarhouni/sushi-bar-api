@@ -3,10 +3,14 @@ package org.example.sushibar.services;
 import org.example.sushibar.entities.UserEntity;
 import org.example.sushibar.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -43,11 +47,24 @@ public class UserServiceImpl implements UserService {
                     existing.setRole(updatedUser.getRole());
                     return repository.save(existing);
                 })
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
     @Override
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         repository.deleteById(id);
+        return false;
     }
+
+    @Override
+    public Page<UserEntity> getAllPaged(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
+    @Override
+    public Optional<UserEntity> findByEmailAndPassword(String email, String password) {
+        return repository.findByEmailAndPassword(email, password);
+    }
+
+
 }
