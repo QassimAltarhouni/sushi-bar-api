@@ -1,4 +1,3 @@
-
 package org.example.sushibar.controllers;
 
 import com.example.api.ReservationsApi;
@@ -6,6 +5,7 @@ import com.example.models.GetAllReservations200Response;
 import com.example.models.ReservationRequest;
 import com.example.models.ReservationResponse;
 import com.example.models.UpdateReservationStatusRequest;
+import org.example.sushibar.aop.annotations.LogMethod;
 import org.example.sushibar.entities.ReservationEntity;
 import org.example.sushibar.mappers.ReservationMapper;
 import org.example.sushibar.services.ReservationService;
@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.example.sushibar.models.ErrorResponse;
+
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,26 +28,26 @@ public class ReservationsController implements ReservationsApi {
     public ReservationsController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<ReservationResponse> createReservation(ReservationRequest request) {
         ReservationEntity entity = ReservationMapper.toEntity(request);
         ReservationEntity saved = reservationService.create(entity);
         return ResponseEntity.status(201).body(ReservationMapper.toDto(saved));
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<Void> cancelReservation(Integer reservationId) {
         reservationService.delete(reservationId.longValue());
         return ResponseEntity.noContent().build();
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<Void> deleteAllReservations() {
         reservationService.getAll().forEach(r -> reservationService.delete(r.getId()));
         return ResponseEntity.noContent().build();
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<GetAllReservations200Response> getAllReservations(Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -66,7 +66,7 @@ public class ReservationsController implements ReservationsApi {
 
         return ResponseEntity.ok(response);
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<ReservationResponse> getReservationById(Integer reservationId) {
         Optional<ReservationEntity> found = reservationService.getById(reservationId.longValue());
@@ -82,9 +82,7 @@ public class ReservationsController implements ReservationsApi {
             case COMPLETED, CANCELLED -> false;
         };
     }
-
-
-
+    @LogMethod
     @Override
     public ResponseEntity<ReservationResponse> updateReservationStatus(
             Integer reservationId,
@@ -94,18 +92,13 @@ public class ReservationsController implements ReservationsApi {
                 .orElseThrow(() -> new NoSuchElementException("Reservation not found"));
 
         var current = reservation.getStatus();
-        var next = ReservationEntity.ReservationStatus.valueOf(updateRequest.getStatus().toString().toUpperCase());
+        var next = ReservationEntity.ReservationStatus.valueOf(updateRequest.getStatus().name());
 
         if (!isValidReservationTransition(current, next)) {
             throw new IllegalArgumentException("Invalid status transition from " + current + " to " + next);
         }
 
-        reservation.setStatus(next);
-        var updated = reservationService.create(reservation);
+        var updated = reservationService.update(reservationId.longValue(), next);
         return ResponseEntity.ok(ReservationMapper.toDto(updated));
     }
-
-
 }
-
-

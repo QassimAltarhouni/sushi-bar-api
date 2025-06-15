@@ -1,0 +1,72 @@
+@prefix : <http://example.org/sushibar#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Menu Items
+:SpicyTunaRoll a :SushiRoll ; :hasName "Spicy Tuna Roll" ; :hasPrice "8.50"^^xsd:decimal .
+:CaliforniaRoll a :SushiRoll ; :hasName "California Roll" ; :hasPrice "7.00"^^xsd:decimal .
+:MisoSoup a :Drink ; :hasName "Miso Soup" ; :hasPrice "3.50"^^xsd:decimal .
+:GreenTea a :Drink ; :hasName "Green Tea" ; :hasPrice "2.00"^^xsd:decimal .
+:ShrimpTempuraRoll a :MenuItem ; :hasName "Shrimp Tempura Roll" ; :hasPrice "9.5"^^xsd:decimal .
+:TunaSashimi a :MenuItem ; :hasName "Tuna Sashimi" ; :hasPrice "11.0"^^xsd:decimal .
+:AvocadoMaki a :MenuItem ; :hasName "Avocado Maki" ; :hasPrice "6.0"^^xsd:decimal .
+:SalmonNigiri a :MenuItem ; :hasName "Salmon Nigiri" ; :hasPrice "8.0"^^xsd:decimal .
+:CucumberRoll a :MenuItem ; :hasName "Cucumber Roll" ; :hasPrice "5.0"^^xsd:decimal .
+:MatchaLatte a :MenuItem ; :hasName "Matcha Latte" ; :hasPrice "4.5"^^xsd:decimal .
+:YuzuLemonade a :MenuItem ; :hasName "Yuzu Lemonade" ; :hasPrice "4.0"^^xsd:decimal .
+:RamuneSoda a :MenuItem ; :hasName "Ramune Soda" ; :hasPrice "3.5"^^xsd:decimal .
+
+# Customers
+:Ahmed a :Customer ; :hasName "Ahmed Al-Mansouri" .
+:Layla a :Customer ; :hasName "Layla El-Fahd" .
+:Omar a :Customer ; :hasName "Omar Al-Khatib" .
+:Fatima a :Customer ; :hasName "Fatima Zahra" .
+:Zainab a :Customer ; :hasName "Zainab Al-Taher" .
+:Youssef a :Customer ; :hasName "Youssef Naji" .
+:Khalid a :Customer ; :hasName "Khalid Barakat" .
+:Mariam a :Customer ; :hasName "Mariam Haddad" .
+:Nour a :Customer ; :hasName "Nour El-Din" .
+:Samira a :Customer ; :hasName "Samira Mansour" .
+:Hussein a :Customer ; :hasName "Hussein Jabari" .
+:Amira a :Customer ; :hasName "Amira Khalil" .
+:Karim a :Customer ; :hasName "Karim Al-Fayed" .
+:Salma a :Customer ; :hasName "Salma Idris" .
+:Cust3 a :Customer ; :hasName "Guest 3" .
+:Cust4 a :Customer ; :hasName "Guest 4" .
+:Cust5 a :Customer ; :hasName "Guest 5" .
+:Cust6 a :Customer ; :hasName "Guest 6" .
+:Cust7 a :Customer ; :hasName "Guest 7" .
+
+# Tables and Reservations
+:Table1 a :Table ; :tableNumber 1 ; :seats 4 .
+:Table2 a :Table ; :tableNumber 2 ; :seats 2 .
+:Table3 a :Table ; :tableNumber 3 ; :seats 3 .
+:Table4 a :Table ; :tableNumber 4 ; :seats 5 .
+:Table5 a :Table ; :tableNumber 5 ; :seats 6 .
+:Table6 a :Table ; :tableNumber 6 ; :seats 2 .
+:Table7 a :Table ; :tableNumber 7 ; :seats 4 .
+
+:Reservation1 a :Reservation ; :reservationTime "2025-06-10T19:00:00"^^xsd:dateTime .
+:Reservation2 a :Reservation ; :reservationTime "2025-06-11T20:30:00"^^xsd:dateTime .
+:Reservation3 a :Reservation ; :reservationTime "2025-06-13T18:00:00"^^xsd:dateTime .
+:Reservation4 a :Reservation ; :reservationTime "2025-06-14T18:00:00"^^xsd:dateTime .
+:Reservation5 a :Reservation ; :reservationTime "2025-06-15T18:00:00"^^xsd:dateTime .
+:Reservation6 a :Reservation ; :reservationTime "2025-06-16T18:00:00"^^xsd:dateTime .
+:Reservation7 a :Reservation ; :reservationTime "2025-06-17T18:00:00"^^xsd:dateTime .
+
+# Links between customers and reservations
+:Ahmed :reserves :Reservation1 .
+:Layla :reserves :Reservation2 .
+:Cust3 :reserves :Reservation3 .
+:Cust4 :reserves :Reservation4 .
+:Cust5 :reserves :Reservation5 .
+:Cust6 :reserves :Reservation6 .
+:Cust7 :reserves :Reservation7 .
+
+# Link reservations to tables
+:Reservation1 :serves :Table1 .
+:Reservation2 :serves :Table2 .
+:Reservation3 :serves :Table3 .
+:Reservation4 :serves :Table4 .
+:Reservation5 :serves :Table5 .
+:Reservation6 :serves :Table6 .
+:Reservation7 :serves :Table7 .

@@ -1,0 +1,48 @@
+# Query 1: List all menu items with names and prices
+PREFIX : <http://example.org/sushibar#>
+SELECT ?item ?name ?price WHERE {
+    ?item a :MenuItem ;
+        :hasName ?name ;
+        :hasPrice ?price .
+}
+
+    # Query 2: Menu items priced under 6.00
+PREFIX : <http://example.org/sushibar#>
+       SELECT ?item ?name ?price WHERE {
+                                       ?item a :MenuItem ;
+                                       :hasName ?name ;
+                                       :hasPrice ?price .
+                                       FILTER(?price < 6.00)
+                                       }
+
+    # Query 3: Customers and their reservation date/time
+PREFIX : <http://example.org/sushibar#>
+SELECT ?customer ?name ?reservation ?time WHERE {
+                                                ?customer a :Customer ;
+                                                :hasName ?name ;
+                                                :reserves ?reservation .
+                                                ?reservation :reservationTime ?time .
+                                                }
+
+    # Query 4: All drinks or sushi rolls
+PREFIX : <http://example.org/sushibar#>
+SELECT ?item ?type ?name WHERE {
+                               {
+                               ?item a :Drink ;
+                               :hasName ?name .
+                               BIND("Drink" AS ?type)
+                               } UNION {
+                                       ?item a :SushiRoll ;
+                                       :hasName ?name .
+                                       BIND("SushiRoll" AS ?type)
+                                       }
+                               }
+
+    # Query 5: Count reservations per customer
+PREFIX : <http://example.org/sushibar#>
+SELECT ?customer ?name (COUNT(?reservation) AS ?reservationsMade) WHERE {
+                                                                        ?customer a :Customer ;
+                                                                        :hasName ?name ;
+                                                                        :reserves ?reservation .
+                                                                        }
+GROUP BY ?customer ?name

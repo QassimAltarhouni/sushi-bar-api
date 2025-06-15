@@ -3,6 +3,7 @@ package org.example.sushibar.controllers;
 import com.example.api.UsersApi;
 import com.example.models.GetAllUsers200Response;
 import com.example.models.User;
+import org.example.sushibar.aop.annotations.LogMethod;
 import org.example.sushibar.entities.UserEntity;
 import org.example.sushibar.mappers.UserMapper;
 import org.example.sushibar.services.UserService;
@@ -25,7 +26,7 @@ public class UsersController implements UsersApi {
     public UsersController(UserService userService) {
         this.userService = userService;
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<User> createUser(User user) {
         UserEntity entity = UserMapper.toEntity(user);
@@ -33,13 +34,13 @@ public class UsersController implements UsersApi {
         return ResponseEntity.status(201).body(UserMapper.toDto(saved));
     }
 
-
+    @LogMethod
     @Override
     public ResponseEntity<Void> deleteAllUsers() {
         userService.getAll().forEach(user -> userService.delete(user.getId()));
         return ResponseEntity.noContent().build();
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<GetAllUsers200Response> getAllUsers(Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -58,13 +59,14 @@ public class UsersController implements UsersApi {
 
         return ResponseEntity.ok(response);
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<User> updateUser(Integer userId, User user) {
         UserEntity updated = UserMapper.toEntity(user);
         UserEntity result = userService.update(userId.longValue(), updated);
         return ResponseEntity.ok(UserMapper.toDto(result));
     }
+    @LogMethod
     @Override
     public ResponseEntity<User> getUserById(Integer userId) {
         return userService.getById(userId.longValue())
@@ -72,7 +74,7 @@ public class UsersController implements UsersApi {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @LogMethod
     @Override
     public ResponseEntity<User> getCurrentUser() {
         Long demoUserId = 1L; // Replace with extracted userId from token in the future
@@ -81,11 +83,12 @@ public class UsersController implements UsersApi {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @LogMethod
     @Override
-    public ResponseEntity<Void> deleteUserById(Integer userId) {
-        boolean deleted = userService.delete(userId.longValue());
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+
+    public ResponseEntity<User>  deleteUserById(Integer userId) {
+        UserEntity deletedUser = userService.delete(userId.longValue());
+        return ResponseEntity.ok(UserMapper.toDto(deletedUser));
     }
 
 }

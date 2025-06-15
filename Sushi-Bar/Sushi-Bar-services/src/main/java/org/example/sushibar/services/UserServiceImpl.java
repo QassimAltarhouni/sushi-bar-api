@@ -51,11 +51,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean delete(Long id) {
-        repository.deleteById(id);
-        return false;
-    }
 
+    public UserEntity delete(Long id) {
+        Optional<UserEntity> userOpt = repository.findById(id);
+        if (userOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+
+        UserEntity user = userOpt.get();
+        repository.delete(user);
+        return user;
+    }
     @Override
     public Page<UserEntity> getAllPaged(Pageable pageable) {
         return repository.findAll(pageable);
@@ -64,6 +70,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserEntity> findByEmailAndPassword(String email, String password) {
         return repository.findByEmailAndPassword(email, password);
+    }
+    @Override
+    public Optional<UserEntity> getByPhone(String phone) {
+        return repository.findByPhone(phone);
     }
 
 

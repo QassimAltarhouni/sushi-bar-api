@@ -1,7 +1,6 @@
 package org.example.sushibar.entities;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,6 +19,19 @@ public class ReservationEntity {
     private LocalDateTime date;
     private Integer tableNumber;
 
+    @Column(name = "number_of_people")
+    private Integer numberOfPeople;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "position")
+    private String position;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -36,6 +48,18 @@ public class ReservationEntity {
     public Integer getTableNumber() { return tableNumber; }
     public void setTableNumber(Integer tableNumber) { this.tableNumber = tableNumber; }
 
+    public Integer getNumberOfPeople() { return numberOfPeople; }
+    public void setNumberOfPeople(Integer numberOfPeople) { this.numberOfPeople = numberOfPeople; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
+
+    public UserEntity getUser() { return user; }
+    public void setUser(UserEntity user) { this.user = user; }
+
     // Enum definition
     public enum ReservationStatus {
         PENDING,
@@ -44,9 +68,4 @@ public class ReservationEntity {
         COMPLETED,
         CANCELLED
     }
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
-
 }

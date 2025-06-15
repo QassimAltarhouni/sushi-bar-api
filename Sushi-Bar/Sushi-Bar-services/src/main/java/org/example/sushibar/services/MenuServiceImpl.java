@@ -3,7 +3,9 @@ package org.example.sushibar.services;
 import org.example.sushibar.entities.MenuItemEntity;
 import org.example.sushibar.repositories.MenuItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
  import java.util.List;
@@ -56,6 +58,16 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public Page<MenuItemEntity> getAllPaged(Pageable pageable) {
         return repository.findAll(pageable);
+    }
+
+    @Override
+    public Page<MenuItemEntity> getAllByCategoryPaged(String category, Pageable pageable) {
+        return repository.findByCategoryIgnoreCase(category, pageable);
+    }
+    @Override
+    public List<MenuItemEntity> findTopMenuItems() {
+        Pageable topFive = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "price"));
+         return repository.findTop5ByOrderByPriceDesc();
     }
 
 }

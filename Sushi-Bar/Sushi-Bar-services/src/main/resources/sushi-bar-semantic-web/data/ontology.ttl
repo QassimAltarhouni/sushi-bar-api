@@ -1,0 +1,64 @@
+@prefix : <http://example.org/sushibar#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://example.org/sushibar#> .
+
+:MenuItem      a rdfs:Class ;
+               rdfs:label "Menu Item" .
+
+:Drink         a rdfs:Class ;
+               rdfs:subClassOf :MenuItem ;
+               rdfs:label "Drink" .
+
+:SushiRoll     a rdfs:Class ;
+               rdfs:subClassOf :MenuItem ;
+               rdfs:label "Sushi Roll" .
+
+:Nigiri        a rdfs:Class ;
+               rdfs:subClassOf :MenuItem ;
+               rdfs:label "Nigiri (Seafood on Rice)" .
+
+:Customer      a rdfs:Class ;
+               rdfs:label "Customer" .
+
+:Reservation   a rdfs:Class ;
+               rdfs:label "Reservation" .
+
+:Table         a rdfs:Class ;
+               rdfs:label "Table" .
+
+:hasName       a rdf:Property ;
+               rdfs:domain  :MenuItem , :Customer ;
+               rdfs:range   xsd:string ;
+               rdfs:label   "has name" .
+
+:hasPrice      a rdf:Property ;
+               rdfs:domain  :MenuItem ;
+               rdfs:range   xsd:decimal ;
+               rdfs:label   "has price" .
+
+:reservationTime  a rdf:Property ;
+                  rdfs:domain  :Reservation ;
+                  rdfs:range   xsd:dateTime ;
+                  rdfs:label   "reservation time" .
+
+:tableNumber   a rdf:Property ;
+               rdfs:domain  :Table ;
+               rdfs:range   xsd:integer ;
+               rdfs:label   "table number" .
+
+:seats         a rdf:Property ;
+               rdfs:domain  :Table ;
+               rdfs:range   xsd:integer ;
+               rdfs:label   "number of seats" .
+
+:reserves      a rdf:Property ;
+               rdfs:domain  :Customer ;
+               rdfs:range   :Reservation ;
+               rdfs:label   "makes reservation" .
+
+:serves        a rdf:Property ;
+               rdfs:domain  :Order ;
+               rdfs:range   :MenuItem ;
+               rdfs:label   "serves menu item" .

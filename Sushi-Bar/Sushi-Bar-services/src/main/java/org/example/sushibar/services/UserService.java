@@ -9,12 +9,13 @@ import org.springframework.data.domain.Pageable;
 
 
 public interface UserService {
+
     List<UserEntity> getAll();
     Optional<UserEntity> getById(Long id);
     UserEntity create(UserEntity user);
     UserEntity update(Long id, UserEntity user);
-    boolean delete(Long id);
+    UserEntity delete(Long id);
     Page<UserEntity> getAllPaged(Pageable pageable);
     Optional<UserEntity> findByEmailAndPassword(String email, String password);
-
+    Optional<UserEntity> getByPhone(String phone);
 }

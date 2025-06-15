@@ -17,6 +17,10 @@ tags:
     description: User account management
   - name: auth
     description: Authentication operations like login and logout
+  - name: tables
+    description: table operations
+  - name: statistics
+    description: View method usage and performance stats
 paths:
   /menu:
     get:
@@ -39,6 +43,12 @@ paths:
           schema:
             type: integer
             default: 10
+        - name: category
+          in: query
+          description: Filter items by category (e.g., Roll, Soup, Appetizer)
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Paginated list of menu items
@@ -260,6 +270,31 @@ paths:
                   error:
                     type: string
                     example: "Menu item not found"
+  /menu/top:
+    get:
+      tags:
+        - menu
+      summary: Get top 5 menu items by price
+      operationId: getTopMenuItems
+      responses:
+        '200':
+          description: Top menu items fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItem'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Something went wrong"
   /reservations:
     post:
       tags:
@@ -680,6 +715,10 @@ paths:
       responses:
         '204':
           description: User deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '404':
           description: User not found
           content:
@@ -851,6 +890,48 @@ paths:
                   error:
                     type: string
                     example: "Order not found"
+  /orders/by-user/{userId}:
+    get:
+      tags:
+        - orders
+      summary: Get all orders by user ID
+      operationId: getOrdersByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user whose orders to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of orders for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+              examples:
+                example1:
+                  value:
+                    - orderId: 1
+                      customerNumber: "Mohammed Qassim"
+                      status: "Completed"
+                      items:
+                        - id: 1
+                          name: "California Roll"
+                          price: 8.99
+        '404':
+          description: No orders found for this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No orders found for user"
   /orders/{orderId}/status:
     patch:
       tags:
@@ -967,6 +1048,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/LoginUser200Response'
                 type: object
                 properties:
                   token:
@@ -998,6 +1080,147 @@ paths:
                   message:
                     type: string
                     example: "Token invalidated on client-side. Please delete it."
+  /auth/me:
+    get:
+      tags:
+        - auth
+      summary: Get current authenticated user by ID
+      operationId: getCurrentAuthenticatedUser
+      description: Returns the profile of the user by ID (temporary implementation before using real tokens).
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: The ID of the user to retrieve
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                example:
+                  value:
+                    id: 1
+                    username: Mohammed
+                    email: mohammed@g.com
+                    phone: "+123456789"
+                    role: customer
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /tables:
+    get:
+      tags:
+        - tables
+      summary: Get all tables
+      operationId: getAllTables
+      responses:
+        '200':
+          description: List of all tables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Table'
+
+    post:
+      tags:
+        - tables
+      summary: Add a new table (admin)
+      operationId: createTable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Table'
+      responses:
+        '201':
+          description: Table created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+  /tables/{id}/availability:
+    patch:
+      tags:
+        - tables
+      summary: Update table availability
+      operationId: updateTableAvailability
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: available
+          in: query
+          required: true
+          schema:
+            type: boolean
+        - name: seats
+          in: query
+          required: true
+          schema:
+            type: integer            
+      responses:
+        '200':
+          description: Availability updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+  /statistics:
+    get:
+      tags:
+        - statistics
+      summary: View usage statistics
+      description: Shows how many times each method was called and the highest price returned.
+      operationId: getStatistics
+      responses:
+        '200':
+          description: Statistics data returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  methodStats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        methodKey:
+                          type: string
+                        callCount:
+                          type: integer
+                        maxReturnedPrice:
+                          type: number
+                          format: float
+                  mostCalledMethod:
+                    type: string
+                  mostCalledCount:
+                    type: integer
+                  highestPrice:
+                    type: number
+                    format: float
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+
 security:
   - bearerAuth: []
 components:
@@ -1027,10 +1250,26 @@ components:
           type: string
         category:
           type: string
+          description: Category of the item (e.g., Roll, Soup, Dessert)
         imageUrl:
           type: string
           format: uri
           description: URL of the menu item image
+    Table:
+      type: object
+      properties:
+        id:
+          type: integer
+        tableNumber:
+          type: integer
+        location:
+          type: string
+        position:
+          type: string
+        available:
+          type: boolean
+        seats:
+          type: integer
 
     ReservationRequest:
       type: object
@@ -1038,6 +1277,10 @@ components:
         - customerNumber
         - date
         - tableNumber
+        - numberOfPeople
+        - location
+        - position
+        - seats
       properties:
         customerNumber:
           type: string
@@ -1046,6 +1289,12 @@ components:
           format: date-time
         tableNumber:
           type: integer
+        numberOfPeople:
+          type: integer
+        location:
+          type: string
+        position:
+          type: string
 
     ReservationResponse:
       type: object
@@ -1060,7 +1309,12 @@ components:
         date:
           type: string
           format: date-time
-
+        numberOfPeople:
+          type: integer
+        location:
+          type: string
+        position:
+          type: string
     User:
       type: object
       required:
@@ -1086,18 +1340,30 @@ components:
       type: object
       required:
         - items
-        - customerNumber
+        - phone
       properties:
-        customerNumber:
+        phone:
           type: string
+          example: "+1234567890"
         items:
           type: array
           items:
             type: integer
             description: Menu item IDs
+        paid: # ✅ جديد
+          type: boolean
+        createdOn: # ✅ جديد
+          type: string
+          format: date-time
         notes:
           type: string
-
+    LoginUser200Response:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
     OrderResponse:
       type: object
       properties:
@@ -1105,16 +1371,33 @@ components:
           type: integer
         phone:
           type: string
-        customerNumber:
-          type: string
         status:
           type: string
           enum: [ Pending, Preparing, Ready, Delivered, Cancelled ]
+        notes:
+          type: string
+        paid: # ✅ جديد
+          type: boolean
+        createdOn: # ✅ جديد
+          type: string
+          format: date-time
+        totalCost: # ✅ اختياري (لحساب الكلفة المجمعة)
+          type: number
+          format: float
+        buyer: # ✅ جديد (مثلاً username)
+          $ref: '#/components/schemas/BuyerSummary'
         items:
           type: array
           items:
             $ref: '#/components/schemas/MenuItem'
-
+    BuyerSummary:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        username:
+          type: string
     ErrorResponse:
       type: object
       properties:

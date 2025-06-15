@@ -15,5 +15,6 @@ public interface MenuService {
     MenuItemEntity update(Long id, MenuItemEntity updatedItem);
     void delete(Long id);
     Page<MenuItemEntity> getAllPaged(Pageable pageable);
-
+    Page<MenuItemEntity> getAllByCategoryPaged(String category, Pageable pageable);
+    List<MenuItemEntity> findTopMenuItems();
 }
