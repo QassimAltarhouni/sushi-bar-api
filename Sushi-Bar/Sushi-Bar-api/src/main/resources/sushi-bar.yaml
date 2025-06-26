@@ -1270,6 +1270,20 @@ paths:
             application/ld+json:
               schema:
                 type: string
+  /semantic/restaurant/page:
+    get:
+      tags:
+        - semantic
+      summary: Get restaurant metadata HTML page
+      operationId: getRestaurantMetadataPage
+      responses:
+        '200':
+          description: HTML with JSON-LD embedded
+          content:
+            text/html:
+              schema:
+                type: string
+
 
 security:
   - bearerAuth: []

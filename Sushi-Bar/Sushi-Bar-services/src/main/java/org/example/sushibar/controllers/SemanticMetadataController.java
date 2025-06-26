@@ -46,6 +46,39 @@ public class SemanticMetadataController {
                 .body(jsonLd);
     }
 
+    /**
+     * Returns a simple HTML page with the JSON-LD embedded directly in a
+     * {@code <script type="application/ld+json">} block. This allows search
+     * engine crawlers that do not execute JavaScript to detect the structured
+     * data.
+     */
+    @GetMapping(value = "/restaurant/page", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> getRestaurantMetadataPage() {
+        String jsonLd = service.getLatest()
+                .map(SemanticMetadataEntity::getJsonLd)
+                .orElse(EMPTY_JSON_LD);
+
+        String html = """
+                <!DOCTYPE html>
+                <html lang=\"en\">
+                <head>
+                  <meta charset=\"UTF-8\">
+                  <title>Restaurant Metadata</title>
+                  <script type=\"application/ld+json\">
+                """ + jsonLd + """
+                  </script>
+                </head>
+                <body>
+                  <h1>Sushi Bar</h1>
+                </body>
+                </html>
+                """;
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
+    }
+
     @Operation(summary = "Create restaurant semantic metadata",
             description = "Stores new JSON-LD metadata",
             responses = {
