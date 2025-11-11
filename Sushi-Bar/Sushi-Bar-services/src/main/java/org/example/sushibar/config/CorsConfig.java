@@ -13,7 +13,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200") // your Angular frontend
+                        .allowedOrigins(
+                                "http://localhost:4200",                   // أثناء التطوير
+                                "https://qassimaltarhouni.github.io"       // النشر على GitHub Pages
+                        )
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
