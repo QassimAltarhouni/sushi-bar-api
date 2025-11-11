@@ -17,5 +17,6 @@ public interface UserService {
     UserEntity delete(Long id);
     Page<UserEntity> getAllPaged(Pageable pageable);
     Optional<UserEntity> findByEmailAndPassword(String email, String password);
+    Optional<UserEntity> findByEmailIgnoreCase(String email);
     Optional<UserEntity> getByPhone(String phone);
 }

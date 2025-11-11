@@ -71,6 +71,11 @@ public class UserServiceImpl implements UserService {
     public Optional<UserEntity> findByEmailAndPassword(String email, String password) {
         return repository.findByEmailAndPassword(email, password);
     }
+
+    @Override
+    public Optional<UserEntity> findByEmailIgnoreCase(String email) {
+        return repository.findByEmailIgnoreCase(email);
+    }
     @Override
     public Optional<UserEntity> getByPhone(String phone) {
         return repository.findByPhone(phone);
